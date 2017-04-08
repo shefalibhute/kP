@@ -1,0 +1,142 @@
+**************************************************(1)**************************************************
+
+create or replace type MARKS_TYPE as object(Subject VARCHAR2(25), midTermMarks NUMBER(3), annualMarks NUMBER(3));
+/
+
+create table MYMARKS (marks MARKS_TYPE);
+
+insert into MYMARKS values(MARKS_TYPE('PLSQL',70,70));
+insert into MYMARKS values(MARKS_TYPE('SQL',80,80));
+insert into MYMARKS values(MARKS_TYPE('JEE',90,90));
+
+select m.marks.midTermMarks from MYMARKS m where m.marks.Subject='PLSQL';
+
+select m.marks.annualMarks from MYMARKS m where m.marks.Subject='PLSQL';
+
+**************************************************(1)**************************************************
+
+
+
+**************************************************(2)**************************************************
+
+create or replace type MARKS_TYPE as object(Subject VARCHAR2(25), midTermMarks NUMBER(3), annualMarks NUMBER(3));
+/
+
+create table students (studentName VARCHAR2(25), rollNo NUMBER(3) primary key, score MARKS_TYPE);
+
+insert into students values('Mkhitaryan',101,MARKS_TYPE('PLSQL',70,70));
+insert into students values('Ibrahimovic',102,MARKS_TYPE('PLSQL',80,80));
+insert into students values('Rashford',103,MARKS_TYPE('PLSQL',90,90));
+
+select s.score from students s where rollNo=101;
+
+update students s set s.score.annualMarks=(s.score.annualMarks+5) where rollNo=101;
+
+
+**************************************************(2)**************************************************
+
+
+
+**************************************************(3)**************************************************
+
+create or replace type ICECREAM_TYPE as object(flavorNo NUMBER(2), Fname VARCHAR2(10), Cost NUMBER(3), Hastopping VARCHAR2(1));
+/
+
+create table menu (MenuNo NUMBER(2) primary key, mainCourse VARCHAR2(25), Desert ICECREAM_TYPE, Colddrink VARCHAR2(6));
+
+insert into menu values(11,'varan bhat',ICECREAM_TYPE(1,'mango',40,'n'),'sprite');
+insert into menu values(12,'kadi bhat',ICECREAM_TYPE(2,'pista',30,'y'),'cola');
+insert into menu values(13,'tup bhat',ICECREAM_TYPE(3,'berry',20,'y'),'7up');
+
+select m.desert.Fname, m.desert.cost from menu m where m.desert.flavorNo=2;
+
+update menu set maincourse='poli bhaji' where menuno=12;
+
+update menu m set m.desert.cost=50 where m.menuno=12;
+
+**************************************************(3)**************************************************
+
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+
+COLLECTIONS
+
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+
+
+**************************************************(1)**************************************************
+
+
+
+**************************************************(1)**************************************************
+
+
+
+**************************************************(2)**************************************************
+
+
+create or replace type CUST_TAB as object(cust_id NUMBER(3), cust_name VARCHAR2(20), plan_name varchar2(10));
+/
+
+create or replace type CUST_DETAILS as varray(3) of cust_tab;
+/
+
+
+
+create table Cust_Tab_details (Srno number(10) primary key, Cust_Info cust_details, Cust_number number(10));
+
+insert into Cust_Tab_details values (1,cust_details(cust_tab(1,'Rooney','plan1'),cust_tab(2,'Pogba','plan2'),cust_tab(3,'Carrick','plan3')),123);
+
+insert into Cust_Tab_details values (2,cust_details(cust_tab(1,'Ronaldo','plan4'),cust_tab(2,'Bale','plan5'),cust_tab(3,'James','plan6')),456);
+
+
+declare
+	cursor c1 is select * from cust_tab_details;
+	v_ci cust_details;
+	v_sno number:=0;
+	a number;
+begin
+	for j in c1
+	loop
+	a:=c1%rowcount;
+	select cust_info into v_ci from cust_tab_details where srno=a;
+	select Srno into v_sno from cust_tab_details where srno=a;
+		for i in 1..v_ci.count
+		loop
+			dbms_output.put_line('Sr. No. '||v_sno||' customer details : Cust No.: '||v_ci(i).cust_id||' Name : '||v_ci(i).cust_name||' Plan : '||v_ci(i).plan_name);
+		end loop;
+	end loop;
+end;
+/
+
+**************************************************(2)**************************************************
+
+
+
+**************************************************(4)**************************************************
+
+
+create or replace type VEHICLE_TYPE as object(Vehicle_No VARCHAR2(12), Vehicle_name VARCHAR2(1), Monthly_Expense number(7));
+/
+
+create or replace type VEHICLE_ARR as varray(3) of VEHICLE_TYPE;
+/
+
+create table EMP_VARRAY (Emp_No NUMBER(4) primary key, Emp_Name VARCHAR2(30), vehicleList VEHICLE_ARR);
+
+insert into EMP_VARRAY values(101,'ROONEY',VEHICLE_ARR(VEHICLE_TYPE('ABC123','F',15000)));
+insert into EMP_VARRAY values(102,'MKHITARYAN',VEHICLE_ARR(VEHICLE_TYPE('MNO789','F',10000)));
+
+create or replace procedure ADD_VEHICLE_DETAILS (p_eno emp_varray.emp_no%type, p_vd VEHICLE_ARR) as
+
+begin
+	update emp_varray set vehicleList=p_vd where Emp_No=p_eno;
+end;
+/
+
+declare
+	v_veh vehicle_arr;
+begin
+	v_veh:=vehicle_arr(vehicle_type('ASD234','F',12000));
+	add_vehicle_details(102,v_veh);
+end;
+/
